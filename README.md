@@ -2,6 +2,14 @@
 
 Experimental iOS/macOS/tvOS client for sing-box, the universal proxy platform.
 
+删除了与 SFI 相关的 iCloud 相关的运行时代码。注意需要编译 `Libbox`，详见 [sing-box](https://github.com/SagerNet/sing-box) 的 `Makefile`。
+
+需要 App Group entitlement，并修改 `Library/Shared/FilePath.swift` 中的相关包名 / 应用组名。无法去除 App Group entitlement，因需要与扩展共享文件。同时还需要 Network Extension entitlement，这是基本要求。
+
+## 可能需要根据证书修改源码的部分
+- `Library/Shared/FilePath.swift` 的 `packageName`（如果修改了包名）、**`groupName`**
+- `SFI/Info.plist` 的 `BGTaskSchedulerPermittedIdentifiers`（如果修改了包名）
+
 ## Documentation
 
 [SFI](https://sing-box.sagernet.org/installation/clients/sfi/) | [SFM](https://sing-box.sagernet.org/installation/clients/sfm/)

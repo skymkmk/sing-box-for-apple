@@ -28,7 +28,7 @@ public struct EditProfileView: View {
 
             Picker(selection: $profile.type) {
                 Text("Local").tag(ProfileType.local)
-                Text("iCloud").tag(ProfileType.icloud)
+                Text("iCloud").tag(ProfileType.icloud).disabled(true)
                 Text("Remote").tag(ProfileType.remote)
             } label: {
                 Text("Type")

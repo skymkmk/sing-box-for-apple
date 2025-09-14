@@ -59,7 +59,7 @@ public struct NewProfileView: View {
             Picker(selection: $viewModel.profileType) {
                 Text("Local").tag(ProfileType.local)
                 #if !os(tvOS)
-                    Text("iCloud").tag(ProfileType.icloud)
+                    Text("iCloud").tag(ProfileType.icloud).disabled(true)
                 #endif
                 Text("Remote").tag(ProfileType.remote)
             } label: {
