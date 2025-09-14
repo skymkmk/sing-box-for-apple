@@ -1,10 +1,12 @@
 import Foundation
 
 public enum FilePath {
+    // 可选：将包名修改为对应的包名，注意这也会一并修改扩展运行时所查询的沙盒。
     public static let packageName = "io.nekohasekai.sfavt"
 }
 
 public extension FilePath {
+    // 将 `groupName` 修改为对应描述文件支持的 App Group
     static let groupName = "group.\(packageName)"
 
     private static let defaultSharedDirectory: URL! = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: FilePath.groupName)
@@ -42,7 +44,7 @@ public extension FilePath {
 
     #endif
 
-    static var iCloudDirectory = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents", isDirectory: true) ?? URL(string: "stub")!
+//    static var iCloudDirectory = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents", isDirectory: true) ?? URL(string: "stub")!
 }
 
 public extension URL {

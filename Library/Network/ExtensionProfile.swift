@@ -87,9 +87,9 @@ public class ExtensionProfile: ObservableObject {
     public func fetchProfile() async {
         do {
             if let profile = try await ProfileManager.get(Int64(SharedPreferences.selectedProfileID.get())) {
-                if profile.type == .icloud {
-                    _ = try profile.read()
-                }
+//                if profile.type == .icloud {
+//                    _ = try profile.read()
+//                }
             }
         } catch {}
     }

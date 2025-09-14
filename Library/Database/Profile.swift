@@ -96,5 +96,6 @@ public struct ProfilePreview: Identifiable, Hashable {
 }
 
 public enum ProfileType: Int {
-    case local = 0, icloud, remote
+//    case local = 0, icloud, remote
+    case local = 0, remote
 }

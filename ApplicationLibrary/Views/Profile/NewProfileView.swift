@@ -41,7 +41,7 @@ public struct NewProfileView: View {
             Picker(selection: $profileType) {
                 #if !os(tvOS)
                     Text("Local").tag(ProfileType.local)
-                    Text("iCloud").tag(ProfileType.icloud)
+//                    Text("iCloud").tag(ProfileType.icloud)
                 #endif
                 Text("Remote").tag(ProfileType.remote)
             } label: {
@@ -75,12 +75,14 @@ public struct NewProfileView: View {
                         }
                     }
                 }
-            } else if profileType == .icloud {
-                FormItem(String(localized: "Path")) {
-                    TextField("Path", text: $remotePath, prompt: Text("Required"))
-                        .multilineTextAlignment(.trailing)
-                }
-            } else if profileType == .remote {
+            }
+//            else if profileType == .icloud {
+//                FormItem(String(localized: "Path")) {
+//                    TextField("Path", text: $remotePath, prompt: Text("Required"))
+//                        .multilineTextAlignment(.trailing)
+//                }
+//            }
+            else if profileType == .remote {
                 FormItem(String(localized: "URL")) {
                     TextField("URL", text: $remotePath, prompt: Text("Required"))
                         .multilineTextAlignment(.trailing)
@@ -139,10 +141,11 @@ public struct NewProfileView: View {
             return
         }
         if remotePath.isEmpty {
-            if profileType == .icloud {
-                alert = Alert(errorMessage: String(localized: "Missing path"))
-                return
-            } else if profileType == .remote {
+//            if profileType == .icloud {
+//                alert = Alert(errorMessage: String(localized: "Missing path"))
+//                return
+//            } else
+            if profileType == .remote {
                 alert = Alert(errorMessage: String(localized: "Missing URL"))
                 return
             }
@@ -202,22 +205,24 @@ public struct NewProfileView: View {
                 try "{}".write(to: profileConfig, atomically: true, encoding: .utf8)
             }
             savePath = profileConfig.relativePath
-        } else if profileType == .icloud {
-            if !FileManager.default.fileExists(atPath: FilePath.iCloudDirectory.path) {
-                try FileManager.default.createDirectory(at: FilePath.iCloudDirectory, withIntermediateDirectories: true)
-            }
-            let saveURL = FilePath.iCloudDirectory.appendingPathComponent(remotePath, isDirectory: false)
-            _ = saveURL.startAccessingSecurityScopedResource()
-            defer {
-                saveURL.stopAccessingSecurityScopedResource()
-            }
-            do {
-                _ = try String(contentsOf: saveURL)
-            } catch {
-                try "{}".write(to: saveURL, atomically: true, encoding: .utf8)
-            }
-            savePath = remotePath
-        } else if profileType == .remote {
+        }
+//        else if profileType == .icloud {
+//            if !FileManager.default.fileExists(atPath: FilePath.iCloudDirectory.path) {
+//                try FileManager.default.createDirectory(at: FilePath.iCloudDirectory, withIntermediateDirectories: true)
+//            }
+//            let saveURL = FilePath.iCloudDirectory.appendingPathComponent(remotePath, isDirectory: false)
+//            _ = saveURL.startAccessingSecurityScopedResource()
+//            defer {
+//                saveURL.stopAccessingSecurityScopedResource()
+//            }
+//            do {
+//                _ = try String(contentsOf: saveURL)
+//            } catch {
+//                try "{}".write(to: saveURL, atomically: true, encoding: .utf8)
+//            }
+//            savePath = remotePath
+//        }
+        else if profileType == .remote {
             let remoteContent = try HTTPClient().getString(remotePath)
             var error: NSError?
             LibboxCheckConfig(remoteContent, &error)

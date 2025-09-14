@@ -87,8 +87,8 @@ public class ProfileServer {
             switch profile.type {
             case .local:
                 content.type = LibboxProfileTypeLocal
-            case .icloud:
-                content.type = LibboxProfileTypeiCloud
+//            case .icloud:
+//                content.type = LibboxProfileTypeiCloud
             case .remote:
                 content.type = LibboxProfileTypeRemote
             }
@@ -116,8 +116,8 @@ public class ProfileServer {
                 switch profile.type {
                 case .local:
                     preview.type = LibboxProfileTypeLocal
-                case .icloud:
-                    preview.type = LibboxProfileTypeiCloud
+//                case .icloud:
+//                    preview.type = LibboxProfileTypeiCloud
                 case .remote:
                     preview.type = LibboxProfileTypeRemote
                 }

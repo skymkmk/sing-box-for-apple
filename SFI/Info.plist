@@ -2,6 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 如果自定义了包名，将 `BGTaskSchedulerPermittedIdentifiers` 修改为 {packageName}.update_profiles -->
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>io.nekohasekai.sfavt.update_profiles</string>
@@ -23,6 +24,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>zh_CN</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -38,8 +44,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>NSApplicationServices</key>
 	<dict>
 		<key>Advertises</key>
@@ -49,18 +53,6 @@
 				<string>sing-box:profile</string>
 			</dict>
 		</array>
-	</dict>
-	<key>NSUbiquitousContainers</key>
-	<dict>
-		<key>iCloud.io.nekohasekai.sfavt</key>
-		<dict>
-			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
-			<true/>
-			<key>NSUbiquitousContainerName</key>
-			<string>sing-box</string>
-			<key>NSUbiquitousContainerSupportedFolderLevels</key>
-			<string>Any</string>
-		</dict>
 	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -116,12 +108,5 @@
 			</dict>
 		</dict>
 	</array>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>en</string>
-		<string>zh_CN</string>
-	</array>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
 </dict>
 </plist>

@@ -24,18 +24,19 @@ public struct EditProfileView: View {
 
             Picker(selection: $profile.type) {
                 Text("Local").tag(ProfileType.local)
-                Text("iCloud").tag(ProfileType.icloud)
+//                Text("iCloud").tag(ProfileType.icloud)
                 Text("Remote").tag(ProfileType.remote)
             } label: {
                 Text("Type")
             }
             .disabled(true)
-            if profile.type == .icloud {
-                FormItem(String(localized: "Path")) {
-                    TextField("Path", text: $profile.path, prompt: Text("Required"))
-                        .multilineTextAlignment(.trailing)
-                }
-            } else if profile.type == .remote {
+//            if profile.type == .icloud {
+//                FormItem(String(localized: "Path")) {
+//                    TextField("Path", text: $profile.path, prompt: Text("Required"))
+//                        .multilineTextAlignment(.trailing)
+//                }
+//            } else
+            if profile.type == .remote {
                 FormItem(String(localized: "URL")) {
                     TextField("URL", text: $profile.remoteURL.unwrapped(""), prompt: Text("Required"))
                         .multilineTextAlignment(.trailing)
