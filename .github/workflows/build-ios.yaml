@@ -1,0 +1,98 @@
+name: Build SFI
+
+on:
+  workflow_dispatch:
+    inputs:
+      sing-box_version:
+        description: 'sing-box version'
+        required: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout SFA (Apple)
+        uses: actions/checkout@v5
+        with:
+          path: sing-box-for-apple
+
+      - name: Checkout sing-box
+        uses: actions/checkout@v5
+        with:
+          repository: SagerNet/sing-box
+          ref: ${{ github.event.inputs.sing-box_version }}
+          path: sing-box
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: sing-box/go.mod
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Modify Project Settings Before Build
+        env:
+          PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
+          GROUP_NAME: ${{ secrets.GROUP_NAME }}
+        working-directory: ./sing-box-for-apple
+        run: |
+          if [ -z "$GROUP_NAME" ]; then
+            echo "Error: GROUP_NAME secret is not set."
+            exit 1
+          fi
+
+          perl -i -pe "s/groupName\\s*=.*/groupName = \"${GROUP_NAME}\"/" Library/Shared/FilePath.swift
+
+          if [ -n "$PACKAGE_NAME" ]; then
+            perl -i -pe "s/packageName\\s*=.*/packageName = \"${PACKAGE_NAME}\"/" Library/Shared/FilePath.swift
+            /usr/libexec/PlistBuddy -c "Delete :BGTaskSchedulerPermittedIdentifiers" SFI/Info.plist || true
+            /usr/libexec/PlistBuddy -c "Add :BGTaskSchedulerPermittedIdentifiers array" SFI/Info.plist
+            /usr/libexec/PlistBuddy -c "Add :BGTaskSchedulerPermittedIdentifiers:0 string '${PACKAGE_NAME}.update_profiles'" SFI/Info.plist
+          else
+            echo "Package Name not provided, skipping update."
+          fi
+
+      - name: Initialize Libbox Build Environment
+        run: make lib_install
+        working-directory: ./sing-box
+
+      - name: Build Libbox
+        run: make lib_ios
+        working-directory: ./sing-box
+
+      - name: Build Archive
+        working-directory: ./sing-box-for-apple
+        run: |
+          xcodebuild clean -scheme SFI && \
+          xcodebuild archive -scheme SFI \
+                         -configuration Release \
+                         -destination 'generic/platform=iOS' \
+                         -archivePath build/SFI.xcarchive \
+                         CODE_SIGN_IDENTITY="" \
+                         CODE_SIGNING_REQUIRED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r sing-box-for-apple/build/SFI.xcarchive/Products/Applications/sing-box.app Payload/ && \
+          zip -q SFI.ipa Payload
+
+      - name: Encrypt IPA
+        env:
+          ARTIFACT_PASSWORD: ${{ secrets.ARTIFACT_PASSWORD }}
+        run: |
+          if [ -z "$ARTIFACT_PASSWORD" ]; then
+            echo "Error: ARTIFACT_PASSWORD secret is not set."
+            exit 1
+          fi
+          zip -q -9 -P "$ARTIFACT_PASSWORD" SFI.zip SFI.ipa
+
+      - name: Upload Encrypted Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPA
+          path: SFI.zip
