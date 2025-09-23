@@ -86,7 +86,7 @@ jobs:
         run: |
           mkdir -p Payload
           cp -r sing-box-for-apple/build/SFI.xcarchive/Products/Applications/sing-box.app Payload/ && \
-          zip -q SFI.ipa Payload
+          zip -q -r SFI.ipa Payload
 
       - name: Encrypt IPA
         env:
