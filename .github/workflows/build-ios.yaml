@@ -126,4 +126,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: IPA-v${{ github.event.inputs.sing-box_version }}-${{ github.event.inputs.target_env }}
-          path: SFI.zip
+          path: SFI-v${{ github.event.inputs.sing-box_version }}-${{ github.event.inputs.target_env }}.zip
