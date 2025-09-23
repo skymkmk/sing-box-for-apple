@@ -6,10 +6,17 @@ on:
       sing-box_version:
         description: 'sing-box version'
         required: true
+      target_env:
+        description: 'target env'
+        required: true
+        type: environment
 
 jobs:
   build:
+    name: Build for ${{ github.event.inputs.target_env }}
     runs-on: macos-latest
+    environment: 
+      name: ${{ github.event.inputs.target_env }}
 
     steps:
       - name: Checkout SFA (Apple)
@@ -94,5 +101,5 @@ jobs:
       - name: Upload Encrypted Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: IPA
+          name: IPA-${{ github.event.inputs.target_env }}
           path: SFI.zip
