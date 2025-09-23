@@ -13,10 +13,13 @@ on:
 
 jobs:
   build:
-    name: Build for ${{ github.event.inputs.target_env }}
+    name: Build v${{ github.event.inputs.sing-box_version }} for ${{ github.event.inputs.target_env }}
     runs-on: macos-latest
     environment: 
       name: ${{ github.event.inputs.target_env }}
+    env:
+      VERSION: ${{ github.event.inputs.sing-box_version }}
+      GH_ENV: ${{ github.event.inputs.target_env }}
 
     steps:
       - name: Checkout SFA (Apple)
@@ -28,7 +31,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: SagerNet/sing-box
-          ref: ${{ github.event.inputs.sing-box_version }}
+          ref: v${{ github.event.inputs.sing-box_version }}
           path: sing-box
 
       - name: Setup Go Environment
@@ -41,27 +44,35 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Modify Project Settings Before Build
+      - name: Tweak Project Before Build
         env:
           PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
           GROUP_NAME: ${{ secrets.GROUP_NAME }}
+
         working-directory: ./sing-box-for-apple
         run: |
-          if [ -z "$GROUP_NAME" ]; then
+          agvtool new-marketing-version ${VERSION}
+
+          if [ -n "${PACKAGE_NAME}" ]; then
+            find . \( -name "*.swift" -o -name "*.plist" -o -name "*.pbxproj" \)  -type f -exec perl -i -pe "s/io\.nekohasekai\.sfavt/${PACKAGE_NAME}/g" {} +
+          else
+            echo "Package Name not provided, skipping update."
+          fi
+
+          if [ -z "${GROUP_NAME}" ]; then
             echo "Error: GROUP_NAME secret is not set."
             exit 1
           fi
 
           perl -i -pe "s/groupName\\s*=.*/groupName = \"${GROUP_NAME}\"/" Library/Shared/FilePath.swift
 
-          if [ -n "$PACKAGE_NAME" ]; then
-            perl -i -pe "s/packageName\\s*=.*/packageName = \"${PACKAGE_NAME}\"/" Library/Shared/FilePath.swift
-            /usr/libexec/PlistBuddy -c "Delete :BGTaskSchedulerPermittedIdentifiers" SFI/Info.plist || true
-            /usr/libexec/PlistBuddy -c "Add :BGTaskSchedulerPermittedIdentifiers array" SFI/Info.plist
-            /usr/libexec/PlistBuddy -c "Add :BGTaskSchedulerPermittedIdentifiers:0 string '${PACKAGE_NAME}.update_profiles'" SFI/Info.plist
-          else
-            echo "Package Name not provided, skipping update."
-          fi
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('sing-box/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Initialize Libbox Build Environment
         run: make lib_install
@@ -70,6 +81,19 @@ jobs:
       - name: Build Libbox
         run: make lib_ios
         working-directory: ./sing-box
+
+      - name: Get Xcode DerivedData path
+        id: xcode-deriveddata-path
+        working-directory: ./sing-box-for-apple
+        run: echo "path=$(xcodebuild -project sing-box.xcodeproj -scheme SFI -showBuildSettings | grep -m 1 "BUILD_DIR" | grep -oEi "\/.*" | sed 's|/Build/Products||')/SourcePackages" >> $GITHUB_OUTPUT
+
+      - name: Cache Xcode (SPM) dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.xcode-deriveddata-path.outputs.path }}
+          key: ${{ runner.os }}-xcode-spm-${{ hashFiles('sing-box-for-apple/sing-box.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-spm-
 
       - name: Build Archive
         working-directory: ./sing-box-for-apple
@@ -84,22 +108,22 @@ jobs:
 
       - name: Package IPA
         run: |
-          mkdir -p Payload
+          mkdir Payload
           cp -r sing-box-for-apple/build/SFI.xcarchive/Products/Applications/sing-box.app Payload/ && \
-          zip -q -r SFI.ipa Payload
+          zip -q -r SFI-v${VERSION}-${GH_ENV}.ipa Payload
 
       - name: Encrypt IPA
         env:
           ARTIFACT_PASSWORD: ${{ secrets.ARTIFACT_PASSWORD }}
         run: |
-          if [ -z "$ARTIFACT_PASSWORD" ]; then
+          if [ -z "${ARTIFACT_PASSWORD}" ]; then
             echo "Error: ARTIFACT_PASSWORD secret is not set."
             exit 1
           fi
-          zip -q -9 -P "$ARTIFACT_PASSWORD" SFI.zip SFI.ipa
+          zip -q -9 -P "${ARTIFACT_PASSWORD}" SFI-v${VERSION}-${GH_ENV}.zip SFI-v${VERSION}-${GH_ENV}.ipa
 
       - name: Upload Encrypted Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: IPA-${{ github.event.inputs.target_env }}
+          name: IPA-v${{ github.event.inputs.sing-box_version }}-${{ github.event.inputs.target_env }}
           path: SFI.zip
