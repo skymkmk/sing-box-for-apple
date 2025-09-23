@@ -38,11 +38,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: sing-box/go.mod
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+          cache-dependency-path: sing-box/go.sum
 
       - name: Tweak Project Before Build
         env:
@@ -66,14 +62,6 @@ jobs:
 
           perl -i -pe "s/groupName\\s*=.*/groupName = \"${GROUP_NAME}\"/" Library/Shared/FilePath.swift
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('sing-box/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: Initialize Libbox Build Environment
         run: make lib_install
         working-directory: ./sing-box
@@ -81,19 +69,6 @@ jobs:
       - name: Build Libbox
         run: make lib_ios
         working-directory: ./sing-box
-
-      - name: Get Xcode DerivedData path
-        id: xcode-deriveddata-path
-        working-directory: ./sing-box-for-apple
-        run: echo "path=$(xcodebuild -project sing-box.xcodeproj -scheme SFI -showBuildSettings | grep -m 1 "BUILD_DIR" | grep -oEi "\/.*" | sed 's|/Build/Products||')/SourcePackages" >> $GITHUB_OUTPUT
-
-      - name: Cache Xcode (SPM) dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.xcode-deriveddata-path.outputs.path }}
-          key: ${{ runner.os }}-xcode-spm-${{ hashFiles('sing-box-for-apple/sing-box.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-spm-
 
       - name: Build Archive
         working-directory: ./sing-box-for-apple
