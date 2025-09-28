@@ -47,7 +47,7 @@ jobs:
 
         working-directory: ./sing-box-for-apple
         run: |
-          perl -i -pe "s/MARKETING_VERSION\\s*=.*/MARKETING_VERSION = ${VERSION}" sing-box.xcodeproj/project.pbxproj
+          perl -i -pe "s/MARKETING_VERSION\\s*=.*/MARKETING_VERSION = ${VERSION}/" sing-box.xcodeproj/project.pbxproj
 
           if [ -n "${PACKAGE_NAME}" ]; then
             find . \( -name "*.swift" -o -name "*.plist" -o -name "*.pbxproj" \)  -type f -exec perl -i -pe "s/io\.nekohasekai\.sfavt/${PACKAGE_NAME}/g" {} +
