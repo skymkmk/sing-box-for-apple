@@ -50,7 +50,7 @@ jobs:
           perl -i -pe "s/MARKETING_VERSION\\s*=.*/MARKETING_VERSION = ${VERSION};/" sing-box.xcodeproj/project.pbxproj
 
           if [ -n "${PACKAGE_NAME}" ]; then
-            find . \( -name "*.swift" -o -name "*.plist" -o -name "*.pbxproj" \)  -type f -exec perl -i -pe "s/io\.nekohasekai\.sfavt/${PACKAGE_NAME}/g" {} +
+            perl -i -pe "s/BASE_PACKAGE_IDENTIFIER\\s*=.*/BASE_PACKAGE_IDENTIFIER = \"${PACKAGE_NAME}\"/" sing-box.xcodeproj/project.pbxproj
           else
             echo "Package Name not provided, skipping update."
           fi
@@ -60,7 +60,7 @@ jobs:
             exit 1
           fi
 
-          perl -i -pe "s/groupName\\s*=.*/groupName = \"${GROUP_NAME}\"/" Library/Shared/FilePath.swift
+          perl -i -pe "s/APP_GROUP_IDENTIFIER\\s*=.*/APP_GROUP_IDENTIFIER = \"${GROUP_NAME}\"/" sing-box.xcodeproj/project.pbxproj
 
       - name: Initialize Libbox Build Environment
         run: make lib_install
