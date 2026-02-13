@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           path: sing-box-for-apple
+          submodules: 'recursive'
 
       - name: Checkout sing-box
         uses: actions/checkout@v5
